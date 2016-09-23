@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>eMan.Xamarin.Android.IconsRibbon</id>
+    <version>1.0.4</version>
+    <authors>eMan s.r.o.</authors>
+    <owners>eMan</owners>
+    <description>Xamarin Android MSBuild targets for labelin app icons with custom text</description>
+    <releaseNotes>Initial release</releaseNotes>
+    <tags>xamarin android xamarin-android msbuild</tags>
+  </metadata>
+  <files>
+    <file src="eMan.Xamarin.Android.IconsRibbon.targets" target="build\eMan.Xamarin.Android.IconsRibbon.targets" />
+  </files>
+</package>

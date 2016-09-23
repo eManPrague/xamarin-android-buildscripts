@@ -1,0 +1,86 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Example usage: msbuild project.csproj /p:VersionName=1.2.3 /p:VersionCode=123 -->
+
+  <Target Name="OverrideAndroidManifestVersion" BeforeTargets="_ValidateAndroidPackageProperties">
+    <CallTarget Targets="CoreOverrideAndroidManifestVersion"
+                Condition=" '$(VersionName)'!='' Or '$(VersionCode)'!=''" />
+  </Target>
+  
+  <Target Name="DeleteOverridenAndroidManifestVersion" AfterTargets="_CreateBaseApk">
+	<CallTarget Targets="CoreDeleteOverrideAndroidManifestVersion"
+                Condition="$(AndroidManifest.EndsWith('.versioned.xml'))" />
+  </Target>
+
+  <Target Name="CoreDeleteOverrideAndroidManifestVersion">
+	<Delete Files="$(AndroidManifest)" />
+	<Message Text="Versioned Android Manifest at $(AndroidManifest) deleted" />
+  </Target>
+  
+  <Target Name="CoreOverrideAndroidManifestVersion">
+    <PropertyGroup>
+      <AndroidManifestPath>Properties\AndroidManifest.xml</AndroidManifestPath>
+    </PropertyGroup>
+
+    <Error Condition="'$(VersionCode)'!='' and '$([System.Text.RegularExpressions.Regex]::IsMatch(&quot;$(VersionCode)&quot;,&quot;^\d+$&quot;))' == false"
+           Text="VersionCode '$(VersionCode)' must be a positive integer."/>
+		   
+	<Error Condition="'$(VersionName)'!='' and '$([System.Text.RegularExpressions.Regex]::IsMatch(&quot;$(VersionName)&quot;,&quot;\s+$&quot;))' == true"
+          Text="VersionName '$(VersionName)' must not be empty string or only white spaces."/>
+
+    <Message Text="Setting android:versionCode to '$(VersionCode)'" Condition="'$(VersionCode)'!=''"/>
+	<Message Text="Setting android:versionName to '$(VersionName)'" Condition="'$(VersionName)'!=''"/>
+
+    <UpdateAndroidManifestVersion VersionName="$(VersionName)" VersionCode="$(VersionCode)" AndroidManifestPath="$(AndroidManifestPath)" />
+
+    <Message Text="Android Manifest is at $(AndroidManifest)" />
+
+    <PropertyGroup>
+      <AndroidManifest>$(AndroidManifestPath).versioned.xml</AndroidManifest>
+    </PropertyGroup>
+
+    <Message Text="Versioned Android Manifest is at $(AndroidManifest)" />
+  </Target>
+
+  <UsingTask TaskName="UpdateAndroidManifestVersion" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <AndroidManifestPath ParameterType="System.String" Required="true" />
+	  <VersionName ParameterType="System.String" Required="false" />
+      <VersionCode ParameterType="System.String" Required="false" />
+    </ParameterGroup>
+
+    <Task>
+      <Reference Include="System.Xml" />
+      <Reference Include="System.Xml.Linq" />
+      <Using Namespace="System.Xml.Linq" />
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs">
+<![CDATA[
+if (!File.Exists(AndroidManifestPath)) 
+{
+	Log.LogError(string.Format("The android manifest could not be located at path '{0}'", AndroidManifestPath));
+	return false;
+}
+  
+var doc = XDocument.Load(AndroidManifestPath);
+XNamespace ns = "http://schemas.android.com/apk/res/android";  
+var identity = doc.Root;
+
+if (!string.IsNullOrWhiteSpace(VersionName))  
+{
+	identity.Attribute(ns + "versionName").Value = VersionName;
+}
+
+if (!string.IsNullOrWhiteSpace(VersionCode))  
+{
+	identity.Attribute(ns + "versionCode").Value = VersionCode;
+}
+  
+doc.Save(AndroidManifestPath + ".versioned.xml");
+return true;
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  
+</Project>

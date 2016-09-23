@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>eMan.Xamarin.Android.AndroidManifestVersion</id>
+    <version>1.0.1</version>
+    <authors>eMan s.r.o.</authors>
+    <owners>eMan</owners>
+    <description>Xamarin Android MSBuild targets for chaning versionName and versionCode in Android manifest file</description>
+    <releaseNotes>Initial release</releaseNotes>
+    <tags>xamarin android xamarin-android msbuild</tags>
+  </metadata>
+  <files>
+    <file src="eMan.Xamarin.Android.AndroidManifestVersion.targets" target="build\eMan.Xamarin.Android.AndroidManifestVersion.targets" />
+  </files>
+</package>
